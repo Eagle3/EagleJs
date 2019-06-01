@@ -84,7 +84,7 @@
 			return '本对象原型属性中的方法';				
 		},
 
-		//扩展Eagle.prototype方法接口，把自定义的函数注册到全局eagle对象中
+		//扩展Eagle.prototype方法接口，把自定义的函数注册到全局eagle对象的原型属性中
 		extMethods : function (obj) {
 			if(!this.isEmptyObject(obj)){
 				for (var o in obj) {
@@ -615,15 +615,7 @@ eagle.extMethods({
 	 * email 输入的邮箱
 	 */
 	checkEmail : function(email){
-		if(!email || email.length <= 0){
-			return false;
-		}
-		var reg=/^[a-z0-9](\w|\.|-)*@([a-z0-9]+-?[a-z0-9]+\.){1,3}[a-z]{2,4}$/i;
-		var res = false;
-		if(reg.test(email)){
-			res = true;
-		}
-		return res;
+		return /^[a-z0-9](\w|\.|-)*@([a-z0-9]+-?[a-z0-9]+\.){1,3}[a-z]{2,4}$/i.test(email);
 	},
 	
 	/*
@@ -631,16 +623,7 @@ eagle.extMethods({
 	 * tel 输入的手机号
 	 */
 	checkTel : function(tel){
-		if(tel.length <= 0){
-			return false;
-		}
-		var reg=/^((13)[0-9]{1}|(14)[5|7]{1}|(15)[^4]{1}|(17)[0|7]{1}|(18)[0-9]{1})[0-9]{8}$/;
-		var res = false;
-		if(reg.test(tel)){
-			//如果需要可ajax验证
-			res = true;
-		}
-		return res;
+		return /^((13)[0-9]{1}|(14)[5|7]{1}|(15)[^4]{1}|(17)[0|7]{1}|(18)[0-9]{1})[0-9]{8}$/.test(tel);
 	},
 	
 	/*
@@ -648,16 +631,8 @@ eagle.extMethods({
 	 * cardid 输入的身份证号
 	 */
 	checkCardid:function(cardid){
-		if(cardid.length <= 0){
-			return false;
-		}
 		// 身份证号码为15位或者18位，15位时全为数字，18位前17位为数字，最后一位是校验位，可能为数字或字符X
-		var reg = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
-		var res = false;
-		if(reg.test(cardid)){
-			res = true;
-		}
-		return res;
+		return /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(cardid);
 	},
 	
 	/*
@@ -765,10 +740,7 @@ eagle.extMethods({
 	 * post_num 	输入的邮政编码
 	 */
 	checkPostNum : function(post_num){
-		if(/^[0-9]{6}$/.test(post_num)){
-			return true;
-		}
-		return false;
+		return /^[0-9]{6}$/.test(post_num);
 	},
 });
 
