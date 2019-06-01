@@ -1,45 +1,90 @@
+//-----------------------------------------------------------------------------------------------------------------------------------
+//
+// 封装 Eagle 对象，把 eagle = new Eagle() 对象注册到window全局属性中。 eagle 对象通过原型属性实现JS的继承机制。
+//
+//
+//-----------------------------------------------------------------------------------------------------------------------------------
+
+ /**
+  * 实现函数自调用
+  */
 (function() {
 	
 	///////////////////////////////////////////////////  Eagle对象的父对象 EagleParent  开始  ////////////////////////////////////////////////
+
+	/**
+	 * 父对象构造函数
+	 */
 	function EagleParent() {
+		//父对象构造方法中的方法
+		this.parentMethod = function(){
+			return '父对象构造方法中的方法';	
+		};
+
 		//测试继承，第3优先调用此处的   test_extend
 		this.testExtend = function(){
 			return '第3优先调用：父对象构造方法中的方法';
 		};
 		
 	}
-	
+	/**
+	 * 父对象原型属性
+	 */
 	EagleParent.prototype = {
-			constructor : EagleParent,
-			
-			//测试继承，第4优先调用构造函数原型属性中的test_extend
-			testExtend : function(){
-				return '第4优先调用：父对象构造方法原型属性中的方法';
-			},
+		//构造方法指向 EagleParent
+		constructor : EagleParent,
+		
+		//父对象原型属性中的方法
+		parentPrototypeMethod : function(){
+			return '父对象原型属性中的方法';		
+		},
+
+		//测试继承，第4优先调用构造函数原型属性中的test_extend
+		testExtend : function(){
+			return '第4优先调用：父对象构造方法原型属性中的方法';
+		},
 	};
+
 	///////////////////////////////////////////////////  Eagle对象的父对象 EagleParent  结束  ////////////////////////////////////////////////
 	
 	///////////////////////////////////////////////////  Eagle对象（继承EagleParent）  开始 //////////////////////////////////////////////////
+
+	/**
+	 * Eagle对象构造函数
+	 */
 	function Eagle() {
 		this.ajax = {
 				method : 'GET'
 		};
 		
+		//本对象构造方法中的方法
+		this.selfObjMethod = function(){
+			return '本对象构造方法中的方法';				
+		};
+
 		//测试继承，第1优先调用此处方法
 		this.testExtend = function(){
 			return '第1优先调用：本对象构造函数中的方法';
 		};
 	}
-	
+	/**
+	 * Eagle对象原型属性
+	 */
 	Eagle.prototype = {
+		//构造方法指向 Eagle
 		constructor : Eagle,
 		
 		//测试继承，第2优先调用此处方法
 		testExtend : function(){
 			return '第2优先调用：本构造函数原型属性中的方法';
 		},
-		
-		//扩展Eagle.prototype方法接口
+
+		//本对象原型属性中的方法
+		selfPrototypeMethod : function(){
+			return '本对象原型属性中的方法';				
+		},
+
+		//扩展Eagle.prototype方法接口，把自定义的函数注册到全局eagle对象中
 		extMethods : function (obj) {
 			if(!this.isEmptyObject(obj)){
 				for (var o in obj) {
@@ -465,298 +510,266 @@
 				
 			}
 		},
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+			
 	};
 	///////////////////////////////////////////////////  Eagle对象（继承EagleParent）  结束 //////////////////////////////////////////////////
-	
-	
-	
 	
 	/**
 	 * 调用库方法方式：eagle.ajaxPost(obj);
 	 * 第1优先调用本对象构造方法中的方法，第2优先调用：本构造函数原型属性中的方法，第3优先调用：父对象构造方法中的方法，第4优先调用：父对象构造方法原型属性中的方法
 	 */	
-	window.eagleParent = new EagleParent();
 	window.eagle = new Eagle();
-	//继承父对象，此行等价 Eagle.prototype.__proto__ = window.eagle_parent;
-	window.eagle.__proto__.__proto__ = window.eagleParent; 
-	//Eagle.prototype.__proto__ = window.eagle_parent;
-	
-	//console.log("验证 Eagle.prototype === window.eagle.__proto__ 结果为：");
-	//console.log(Eagle.prototype === window.eagle.__proto__);
-})();
+	//实现继承关系对象，
+	window.eagle.__proto__.__proto__ = new EagleParent();
+	//验证JS通过原型对象继承
+	console.log("验证 Eagle.prototype === window.eagle.__proto__ 结果为:",Eagle.prototype === window.eagle.__proto__);
 
-/*
+/**
  * Eagle 库扩展方法
- * 调用eagle.extend()，将扩展的方法注册到库中。也可把下面的代码单独写到JS文件中，此文件一定要在Eagle库加载之后再引入
+ * 调用eagle.extMethods({})，将扩展的方法注册到库中。也可把下面的代码单独写到JS文件中，此文件要在Eagle库加载之后再引入
  */
 
 //加入一些常规正则验证
 eagle.extMethods({
 	/*
-		 * 验证密码格式
-		 * password  	输入的密码
-		 * rule			验证类型(1：纯字母，2：纯数字，3：字母或数字，4：字母和数字组合，5：字母 或 字母和数字组合，6：数字 或 字母和数字，7：必须是字母、数字和下划线组合，8：必须是字母、数字和特殊字符组合)
-		 * min_length	密码最小长度
-		 * max_length   密码最大长度
-		 */
-		checkPwd : function(password,rule,min_length,max_length){
-			//第一步：验证密码长度
-			var pwd_len = password.length;
-			var length_status = pwd_len < min_length || pwd_len > max_length ? false : true;
-			if(!length_status){
-				return false;
-			}
-			
-			//第二步：验证密码类型
-			var res = false;
-			switch (rule){
-				case 1:
-					var reg = /^[a-zA-Z]+$/;
-					break;
-				case 2:
-					var reg = /^[0-9]+$/;
-					break;
-				case 3:
-					var reg = /^[a-zA-Z0-9]+$/;
-					break;
-				case 4:
-					//第一种写法，一个正则
-					//var reg = /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]+$/;
-					//第二种写法，分步实现
-					if(!/[a-zA-Z]+/i.test(password)){
-						return false;
-					}
-					if(!/[0-9]+/.test(password)){
-						return false;
-					}
-					if(/[^a-zA-Z0-9]+/.test(password)){
-						return false;
-					}
-					return true;
-					break;
-				case 5:
-					var reg = /(^[a-zA-Z]+$)|(^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]+$)/;
-					break;
-				case 6:
-					var reg = /(^[0-9]+$)|(^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]+$)/;
-					break;
-				case 7:
-					//第一种写法，一个正则
-					//var reg = /^(?!([a-zA-Z0-9]+|[a-zA-Z_]+|[_])$)[a-zA-Z0-9_]+$/;
-					//第二种写法，分步实现
-					if(!/[a-zA-Z]+/i.test(password)){
-						return false;
-					}
-					if(!/[0-9]+/.test(password)){
-						return false;
-					}
-					if(!/[_]+/.test(password)){
-						return false;
-					}
-					if(/[^a-zA-Z0-9_]+/.test(password)){
-						return false;
-					}
-					return true;
-					break;
-				case 8:
-					var reg = /^(?!([a-zA-Z\d]+|[a-zA-Z`~\!@#\$%\^&\*\(\)\-_=\+\[\{\]\}\\\|;:\'\",<\.>\/\?]+|[\d`~\!@#\$%\^&\*\(\)\-_=\+\[\{\]\}\\\|;:\'\",<\.>\/\?]+)$)[a-zA-Z\d`~\!@#\$%\^&\*\(\)\-_=\+\[\{\]\}\\\|;:\'\",<\.>\/\?]+$/;
-					break;
-				default:
-					break;
-			}
-			
-			if(reg.test(password)){
-				res = true;
-			}
-			return res;
-		},
-		
-		/*
-		 * 验证邮箱
-		 * email 输入的邮箱
-		 */
-		checkEmail : function(email){
-			if(!email || email.length <= 0){
-				return false;
-			}
-			var reg=/^[a-z0-9](\w|\.|-)*@([a-z0-9]+-?[a-z0-9]+\.){1,3}[a-z]{2,4}$/i;
-			var res = false;
-			if(reg.test(email)){
-				res = true;
-			}
-			return res;
-		},
-		
-		/*
-		 * 验证手机号
-		 * tel 输入的手机号
-		 */
-		checkTel : function(tel){
-			if(tel.length <= 0){
-				return false;
-			}
-			var reg=/^((13)[0-9]{1}|(14)[5|7]{1}|(15)[^4]{1}|(17)[0|7]{1}|(18)[0-9]{1})[0-9]{8}$/;
-			var res = false;
-			if(reg.test(tel)){
-				//如果需要可ajax验证
-				res = true;
-			}
-			return res;
-		},
-		
-		/*
-		 * 验证身份证号
-		 * cardid 输入的身份证号
-		 */
-		checkCardid:function(cardid){
-			if(cardid.length <= 0){
-				return false;
-			}
-			// 身份证号码为15位或者18位，15位时全为数字，18位前17位为数字，最后一位是校验位，可能为数字或字符X
-			var reg = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
-			var res = false;
-			if(reg.test(cardid)){
-				res = true;
-			}
-			return res;
-		},
-		
-		/*
-		 * 验证QQ号
-		 * qq 输入的QQ号
-		 */
-		checkQq : function(qq){
-			if(qq.length <= 0){
-				return false;
-			}
-			//目前QQ最多11位
-			var reg = /^[1-9]{1}[0-9]{4,10}$/;
-			var res = false;
-			if(reg.test(qq)){
-				res = true;
-			}
-			return res;
-		},
-		
-		/*
-		 * 验证纯数字QQ邮箱
-		 * qq_email 输入的QQ邮箱(只能是数字：例如：123456@qq.com，test123456@qq.com则不符合)
-		 */
-		checkQqEmail : function(qq_email){
-			if(qq_email.length <= 0){
-				return false;
-			}
-			var reg = /^([1-9]{1}[0-9]{4,10})@(qq\.com)$/i;
-			var res = false;
-			if(reg.test(qq_email)){
-				res = true;
-			}
-			return res;
-		},
-		
-		/*
-		 * 验证是不是QQ邮箱
-		 * qq_email 输入的QQ邮箱(可能是数字：例如：123456@qq.com，也可能是字母和数字等组合 test123456@qq.com)
-		 */
-		checkAllQqEmail : function(qq_email){
-			if(qq_email.length <= 0){
-				return false;
-			}
-			var reg=/^(([1-9]{1}[0-9]{4,10})|([a-z0-9](\w|\.|-)*))@(qq\.com)$/i;
-			var res = false;
-			if(reg.test(qq_email)){
-				res = true;
-			}
-			return res;
-		},
-		
-		/**
-		 * 验证输入的字符中是否含有中文字符
-		 * chinese 	输入的字符
-		 */
-		checkChinese : function(chinese){
-			if(chinese.length <= 0){
-				return false;
-			}
-			var reg = /[\u4e00-\u9fa5]+/;
-			var res = false;
-			if(reg.test(chinese)){
-				res = true;
-			}
-			return res;
-		},
-		
-		/**
-		 * 验证输入的字符必须全部是中文字符
-		 * chinese 		输入的字符
-		 * min_length	最少几个字符【参数可选】 
-		 * max_length   最多几个字符【参数可选】
-		 */
-		checkAllChinese : function(chinese,min_length,max_length){
-			//第一步：判断是否为空
-			var chinese_len = chinese.length;
-			if(chinese_len <= 0){
-				return false;
-			}
-			//第二步：判断是否输入个数范围
-			var length_status = false;
-			if(!min_length && !max_length){
-				length_status = true;
-			}
-			if(min_length && !max_length){
-				length_status = chinese_len < min_length ? false : true;
-			}
-			if(min_length && max_length){
-				length_status = chinese_len < min_length || chinese_len > max_length ? false : true;
-			}
-			if(!length_status){
-				return false;
-			}
-			//第三步：判断是否全是中文
-			var reg = /^[\u4e00-\u9fa5]+$/;
-			var res = false;
-			if(reg.test(chinese)){
-				res = true;
-			}
-			return res;
-		},
-
-		/**
-		 * 验证邮编
-		 * post_num 	输入的邮政编码
-		 */
-		checkPostNum : function(post_num){
-			if(/^[0-9]{6}$/.test(post_num)){
-				return true;
-			}
+	 * 验证密码格式
+	 * password  	输入的密码
+	 * rule			验证类型(1：纯字母，2：纯数字，3：字母或数字，4：字母和数字组合，5：字母 或 字母和数字组合，6：数字 或 字母和数字，7：必须是字母、数字和下划线组合，8：必须是字母、数字和特殊字符组合)
+	 * min_length	密码最小长度
+	 * max_length   密码最大长度
+	 */
+	checkPwd : function(password,rule,min_length,max_length){
+		//第一步：验证密码长度
+		var pwd_len = password.length;
+		var length_status = pwd_len < min_length || pwd_len > max_length ? false : true;
+		if(!length_status){
 			return false;
-		},
+		}
+		
+		//第二步：验证密码类型
+		var res = false;
+		switch (rule){
+			case 1:
+				var reg = /^[a-zA-Z]+$/;
+				break;
+			case 2:
+				var reg = /^[0-9]+$/;
+				break;
+			case 3:
+				var reg = /^[a-zA-Z0-9]+$/;
+				break;
+			case 4:
+				//第一种写法，一个正则
+				//var reg = /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]+$/;
+				//第二种写法，分步实现
+				if(!/[a-zA-Z]+/i.test(password)){
+					return false;
+				}
+				if(!/[0-9]+/.test(password)){
+					return false;
+				}
+				if(/[^a-zA-Z0-9]+/.test(password)){
+					return false;
+				}
+				return true;
+				break;
+			case 5:
+				var reg = /(^[a-zA-Z]+$)|(^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]+$)/;
+				break;
+			case 6:
+				var reg = /(^[0-9]+$)|(^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]+$)/;
+				break;
+			case 7:
+				//第一种写法，一个正则
+				//var reg = /^(?!([a-zA-Z0-9]+|[a-zA-Z_]+|[_])$)[a-zA-Z0-9_]+$/;
+				//第二种写法，分步实现
+				if(!/[a-zA-Z]+/i.test(password)){
+					return false;
+				}
+				if(!/[0-9]+/.test(password)){
+					return false;
+				}
+				if(!/[_]+/.test(password)){
+					return false;
+				}
+				if(/[^a-zA-Z0-9_]+/.test(password)){
+					return false;
+				}
+				return true;
+				break;
+			case 8:
+				var reg = /^(?!([a-zA-Z\d]+|[a-zA-Z`~\!@#\$%\^&\*\(\)\-_=\+\[\{\]\}\\\|;:\'\",<\.>\/\?]+|[\d`~\!@#\$%\^&\*\(\)\-_=\+\[\{\]\}\\\|;:\'\",<\.>\/\?]+)$)[a-zA-Z\d`~\!@#\$%\^&\*\(\)\-_=\+\[\{\]\}\\\|;:\'\",<\.>\/\?]+$/;
+				break;
+			default:
+				break;
+		}
+		
+		if(reg.test(password)){
+			res = true;
+		}
+		return res;
+	},
+	
+	/*
+	 * 验证邮箱
+	 * email 输入的邮箱
+	 */
+	checkEmail : function(email){
+		if(!email || email.length <= 0){
+			return false;
+		}
+		var reg=/^[a-z0-9](\w|\.|-)*@([a-z0-9]+-?[a-z0-9]+\.){1,3}[a-z]{2,4}$/i;
+		var res = false;
+		if(reg.test(email)){
+			res = true;
+		}
+		return res;
+	},
+	
+	/*
+	 * 验证手机号
+	 * tel 输入的手机号
+	 */
+	checkTel : function(tel){
+		if(tel.length <= 0){
+			return false;
+		}
+		var reg=/^((13)[0-9]{1}|(14)[5|7]{1}|(15)[^4]{1}|(17)[0|7]{1}|(18)[0-9]{1})[0-9]{8}$/;
+		var res = false;
+		if(reg.test(tel)){
+			//如果需要可ajax验证
+			res = true;
+		}
+		return res;
+	},
+	
+	/*
+	 * 验证身份证号
+	 * cardid 输入的身份证号
+	 */
+	checkCardid:function(cardid){
+		if(cardid.length <= 0){
+			return false;
+		}
+		// 身份证号码为15位或者18位，15位时全为数字，18位前17位为数字，最后一位是校验位，可能为数字或字符X
+		var reg = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
+		var res = false;
+		if(reg.test(cardid)){
+			res = true;
+		}
+		return res;
+	},
+	
+	/*
+	 * 验证QQ号
+	 * qq 输入的QQ号
+	 */
+	checkQq : function(qq){
+		if(qq.length <= 0){
+			return false;
+		}
+		//目前QQ最多11位
+		var reg = /^[1-9]{1}[0-9]{4,10}$/;
+		var res = false;
+		if(reg.test(qq)){
+			res = true;
+		}
+		return res;
+	},
+	
+	/*
+	 * 验证纯数字QQ邮箱
+	 * qq_email 输入的QQ邮箱(只能是数字：例如：123456@qq.com，test123456@qq.com则不符合)
+	 */
+	checkQqEmail : function(qq_email){
+		if(qq_email.length <= 0){
+			return false;
+		}
+		var reg = /^([1-9]{1}[0-9]{4,10})@(qq\.com)$/i;
+		var res = false;
+		if(reg.test(qq_email)){
+			res = true;
+		}
+		return res;
+	},
+	
+	/*
+	 * 验证是不是QQ邮箱
+	 * qq_email 输入的QQ邮箱(可能是数字：例如：123456@qq.com，也可能是字母和数字等组合 test123456@qq.com)
+	 */
+	checkAllQqEmail : function(qq_email){
+		if(qq_email.length <= 0){
+			return false;
+		}
+		var reg=/^(([1-9]{1}[0-9]{4,10})|([a-z0-9](\w|\.|-)*))@(qq\.com)$/i;
+		var res = false;
+		if(reg.test(qq_email)){
+			res = true;
+		}
+		return res;
+	},
+	
+	/**
+	 * 验证输入的字符中是否含有中文字符
+	 * chinese 	输入的字符
+	 */
+	checkChinese : function(chinese){
+		if(chinese.length <= 0){
+			return false;
+		}
+		var reg = /[\u4e00-\u9fa5]+/;
+		var res = false;
+		if(reg.test(chinese)){
+			res = true;
+		}
+		return res;
+	},
+	
+	/**
+	 * 验证输入的字符必须全部是中文字符
+	 * chinese 		输入的字符
+	 * min_length	最少几个字符【参数可选】 
+	 * max_length   最多几个字符【参数可选】
+	 */
+	checkAllChinese : function(chinese,min_length,max_length){
+		//第一步：判断是否为空
+		var chinese_len = chinese.length;
+		if(chinese_len <= 0){
+			return false;
+		}
+		//第二步：判断是否输入个数范围
+		var length_status = false;
+		if(!min_length && !max_length){
+			length_status = true;
+		}
+		if(min_length && !max_length){
+			length_status = chinese_len < min_length ? false : true;
+		}
+		if(min_length && max_length){
+			length_status = chinese_len < min_length || chinese_len > max_length ? false : true;
+		}
+		if(!length_status){
+			return false;
+		}
+		//第三步：判断是否全是中文
+		var reg = /^[\u4e00-\u9fa5]+$/;
+		var res = false;
+		if(reg.test(chinese)){
+			res = true;
+		}
+		return res;
+	},
+
+	/**
+	 * 验证邮编
+	 * post_num 	输入的邮政编码
+	 */
+	checkPostNum : function(post_num){
+		if(/^[0-9]{6}$/.test(post_num)){
+			return true;
+		}
+		return false;
+	},
 });
+
+})();
