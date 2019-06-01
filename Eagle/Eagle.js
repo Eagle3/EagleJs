@@ -522,7 +522,7 @@
 	//实现继承关系对象，
 	window.eagle.__proto__.__proto__ = new EagleParent();
 	//验证JS通过原型对象继承
-	console.log("验证 Eagle.prototype === window.eagle.__proto__ 结果为:",Eagle.prototype === window.eagle.__proto__);
+	//console.log("验证 Eagle.prototype === window.eagle.__proto__ 结果为:",Eagle.prototype === window.eagle.__proto__);
 
 /**
  * Eagle 库扩展方法
