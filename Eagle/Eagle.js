@@ -162,6 +162,7 @@
 		
 		//当前日期格式 2017-08-08 10:10:10,也可根据传入时间戳转成时间格式，单位秒
 		nowDate : function(timestamp){
+            timestamp = timestamp - 8*3600; //时间戳本身就是东八区时间戳，但系统认为时间戳是0时区的，会加上8小时，故这里再减去8小时
 			var d = new Date();
 			if(timestamp){
 				var len = (timestamp.toString()).length;
